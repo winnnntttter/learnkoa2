@@ -5,7 +5,7 @@ module.exports = app => {
 
   router.get("/home", HomeController.home);
 
-  router.get("/home/:id/:name", HomeController.homeParams);
+  router.get("/home/:id", HomeController.homeParams);
 
   router.get("/user", HomeController.login);
 
