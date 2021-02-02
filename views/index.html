@@ -4,7 +4,46 @@
     <h2 class="slogan">汇聚天下英才</h2>
     <p class="des">iKcamp是由沪江Web前端团队发起的自由组织<br />我们追随JavaScript这门语言所秉持的精神，为ITer提供完善的在线学习平台和知识体系</p>
     <a href="/login" title="gogogo" class="btn" id="gogogo">进入战场</a>
+    <a href="javascript:;" class="btn" id="getUser" style="margin-top: 10px">获取信息</a>
   </div>
 </div>
 
 <%- include('./common/show.html'); -%> <%- include('./common/footer.html'); -%> <%- include('./common/end.html'); -%>
+<script>
+  function fetchData(type, url, params, data) {
+    if (params) {
+      let paramsArray = [];
+      //拼接参数
+      Object.keys(params).forEach(key => paramsArray.push(key + "=" + params[key]));
+      if (url.search(/\?/) === -1) {
+        url += "?" + paramsArray.join("&");
+      } else {
+        url += "&" + paramsArray.join("&");
+      }
+    }
+    // Default options are marked with *
+    return fetch(url, {
+      body: data ? JSON.stringify(data) : null, // must match 'Content-Type' header
+      cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+      credentials: "same-origin", // include, same-origin, *omit
+      headers: {
+        // "user-agent": "Mozilla/4.0 MDN Example",
+        "content-type": "application/json"
+      },
+      method: type, // *GET, POST, PUT, DELETE, etc.
+      mode: "cors", // no-cors, cors, *same-origin
+      redirect: "follow", // manual, *follow, error
+      referrer: "no-referrer" // *client, no-referrer
+    }).then(response => {
+      if (response.ok) {
+        return response.json(); // parses response to JSON
+      }
+      throw new Error("Network response was not ok.");
+    });
+  }
+  document.getElementById("getUser").addEventListener("click", function () {
+    fetchData("GET", "/getUser", { name: "ikcamp", password: "123456" }, null)
+      .then(data => console.log(data)) // JSON from `response.json()` call
+      .catch(error => console.error(error));
+  });
+</script>
