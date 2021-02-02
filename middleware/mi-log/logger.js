@@ -1,21 +1,43 @@
 const log4js = require("log4js");
+const access = require("./access.js");
 const methods = ["trace", "debug", "info", "warn", "error", "fatal", "mark"];
 
-module.exports = () => {
+const baseInfo = {
+  appLogLevel: "debug",
+  dir: "logs",
+  env: "dev",
+  projectName: "koa2-tutorial",
+  serverIp: "0.0.0.0"
+};
+
+module.exports = options => {
   const contextLogger = {};
-  const config = {
-    appenders: {
-      cheese: {
-        type: "dateFile", // 日志类型
-        filename: `logs/task`, // 输出的文件名
-        pattern: "-yyyy-MM-dd.log", // 文件名增加后缀
-        alwaysIncludePattern: true // 是否总是有后缀名
-      }
-    },
+  const appenders = {};
+
+  // 继承自 baseInfo 默认参数
+  const opts = Object.assign({}, baseInfo, options || {});
+  // 需要的变量解构 方便使用
+  const { env, appLogLevel, dir, serverIp, projectName } = opts;
+  const commonInfo = { projectName, serverIp };
+
+  appenders.cheese = {
+    type: "dateFile",
+    filename: `${dir}/task`,
+    pattern: "-yyyy-MM-dd.log",
+    alwaysIncludePattern: true
+  };
+
+  if (env === "dev" || env === "local" || env === "development") {
+    appenders.out = {
+      type: "console"
+    };
+  }
+  let config = {
+    appenders,
     categories: {
       default: {
-        appenders: ["cheese"],
-        level: "info"
+        appenders: Object.keys(appenders),
+        level: appLogLevel
       }
     }
   };
@@ -23,21 +45,26 @@ module.exports = () => {
   const logger = log4js.getLogger("cheese");
 
   return async (ctx, next) => {
-    // 记录请求开始的时间
     const start = Date.now();
-    log4js.configure(config);
 
-    // 循环methods将所有方法挂载到ctx 上
+    log4js.configure(config);
     methods.forEach((method, i) => {
       contextLogger[method] = message => {
-        logger[method](message);
+        logger[method](access(ctx, message, commonInfo));
       };
     });
     ctx.log = contextLogger;
 
     await next();
-    // 记录完成的时间 作差 计算响应时间
     const responseTime = Date.now() - start;
-    logger.info(`响应时间为${responseTime / 1000}s`);
+    logger.info(
+      access(
+        ctx,
+        {
+          responseTime: `响应时间为${responseTime / 1000}s`
+        },
+        commonInfo
+      )
+    );
   };
 };

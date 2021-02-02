@@ -3,9 +3,18 @@ const bodyParser = require("koa-bodyparser");
 const staticFiles = require("koa-static");
 const views = require("koa-views");
 const miSend = require("./mi-send");
-const miLog = require('./mi-log')
+const miLog = require("./mi-log");
+const ip = require("ip");
 module.exports = app => {
-  app.use(miLog())
+  app.use(
+    miLog({
+      env: app.env, // koa 提供的环境变量
+      projectName: "koa2-tutorial",
+      appLogLevel: "debug",
+      dir: "logs",
+      serverIp: ip.address()
+    })
+  );
   app.use(bodyParser());
   app.use(staticFiles(path.resolve(__dirname, "../public")));
   app.use(views("views", { map: { html: "ejs" } })); //(这样配置，后缀名为.html)
