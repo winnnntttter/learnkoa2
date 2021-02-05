@@ -1,11 +1,11 @@
 const router = require("koa-router")();
-const HomeController = require("./controller/home");
-const ApiController = require("./controller/api");
+// const HomeController = require("./controller/home");
+// const ApiController = require("./controller/api");
 module.exports = app => {
-  router.get("/", HomeController.index);
-  router.get("/login", HomeController.login);
-  router.post("/user/register", HomeController.register);
+  router.get("/", app.controller.home.index);
+  router.get("/login", app.controller.home.login);
+  router.post("/user/register", app.controller.home.register);
 
-  router.get("/getUser", ApiController.user);
+  router.get("/getUser", app.controller.api.user);
   app.use(router.routes()).use(router.allowedMethods());
 };

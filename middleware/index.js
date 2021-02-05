@@ -5,6 +5,7 @@ const views = require("koa-views");
 const miSend = require("./mi-send");
 const miLog = require("./mi-log");
 const miHttpError = require("./mi-http-error");
+const miRule = require("./mi-rule");
 const ip = require("ip");
 module.exports = app => {
   app.use(miHttpError({ errorPageFolder: path.resolve(__dirname, "../views/errorPage") }));
@@ -32,6 +33,25 @@ module.exports = app => {
     await next();
   });
   app.use(miSend());
+
+  /**
+   * 在接口的开头调用
+   * 指定 controller 文件夹下的 js 文件，挂载在 app.controller 属性
+   * 指定 service 文件夹下的 js 文件，挂载在 app.service 属性
+   */
+  miRule({
+    app,
+    rules: [
+      {
+        folder: path.join(__dirname, "../controller"),
+        name: "controller"
+      },
+      {
+        folder: path.join(__dirname, "../service"),
+        name: "service"
+      }
+    ]
+  });
 
   // 增加错误的监听处理
   app.on("error", (err, ctx) => {
